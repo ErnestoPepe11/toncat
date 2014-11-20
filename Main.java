@@ -1,22 +1,26 @@
-import org.eclipse.jetty.server.Server
-import org.eclipse.jetty.servlet.{ DefaultServlet, ServletContextHandler }
-import org.eclipse.jetty.webapp.WebAppContext
-import org.scalatra.servlet.ScalatraListener
+import java.io.File;
+import org.apache.catalina.startup.Tomcat;
 
-object JettyLauncher {
-  def main(args: Array[String]) {
-    val port = if(System.getenv("PORT") != null) System.getenv("PORT").toInt else 8080
+public class Main {
 
-    val server = new Server(port)
-    val context = new WebAppContext()
-    context.setContextPath("/")
-    context.setResourceBase("src/main/webapp")
+    public static void main(String[] args) throws Exception {
 
-    context.setEventListeners(Array(new ScalatraListener))
+        String webappDirLocation = "src/main/webapp/";
+        Tomcat tomcat = new Tomcat();
 
-    server.setHandler(context)
+        //The port that we should run on can be set into an environment variable
+        //Look for that variable and default to 8080 if it isn't there.
+        String webPort = System.getenv("PORT");
+        if(webPort == null || webPort.isEmpty()) {
+            webPort = "8080";
+        }
 
-    server.start
-    server.join
-  }
+        tomcat.setPort(Integer.valueOf(webPort));
+
+        tomcat.addWebapp("/", new File(webappDirLocation).getAbsolutePath());
+        System.out.println("configuring app with basedir: " + new File("./" + webappDirLocation).getAbsolutePath());
+
+        tomcat.start();
+        tomcat.getServer().await();
+    }
 }
